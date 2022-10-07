@@ -1,0 +1,4 @@
+apiVersion: v2
+name: wis
+description: A Helm chart for Kubernetes deployment of cs-ssh
+version: 0.1.0

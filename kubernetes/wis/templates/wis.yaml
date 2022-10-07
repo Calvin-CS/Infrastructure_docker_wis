@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wis-{{ default "staging" .Release.Namespace }}
+  namespace: {{ default "staging" .Release.Namespace }}
+  labels:
+    app: wis-{{ default "staging" .Release.Namespace }}
+  annotations: 
+    "builddate": "20221007-01"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wis-{{ default "staging" .Release.Namespace }}
+  template:
+    metadata:
+      labels:
+        app: wis-{{ default "staging" .Release.Namespace }}
+        {{ if ne .Release.Namespace "production" }}name: wis-{{ .Release.Namespace }}{{- else }}hostname: wis{{- end }}
+    spec:
+      {{ if ne .Release.Namespace "production" }}hostname: wis-{{ .Release.Namespace }}{{- else }}hostname: wis{{- end }} 
+      dnsPolicy: Default
+      dnsConfig:
+        searches:
+          - cs.calvin.edu
+      containers:
+      - name: wis-{{ default "staging" .Release.Namespace }}
+        image: {{ .Values.image.registry }}/{{ .Values.image.name }}:{{ default "latest" .Values.image.tag }}
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wis-{{ default "staging" .Release.Namespace }}
+  namespace: {{ default "staging" .Release.Namespace }}
+  annotations:
+    external-dns.alpha.kubernetes.io/hostname: wis{{- if ne .Release.Namespace "production" }}-{{ default "staging" .Release.Namespace }}{{- end }}.{{ .Values.dns.name }}
+    service.beta.kubernetes.io/azure-dns-label-name: calvincs-wis{{- if ne .Release.Namespace "production" }}-{{ default "staging" .Release.Namespace }}{{- end }}
+spec:
+  type: ClusterIp
+  ports:
+  - port: 80
+  selector:
+    app: wis-{{ default "staging" .Release.Namespace }}

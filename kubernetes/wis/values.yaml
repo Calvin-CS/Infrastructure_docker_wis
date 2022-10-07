@@ -1,0 +1,6 @@
+image:
+  registry: calvincs.azurecr.io
+  name: wis
+  tag: latest
+dns:
+  name: cs.calvin.edu
