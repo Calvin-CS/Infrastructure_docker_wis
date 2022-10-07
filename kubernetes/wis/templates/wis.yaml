@@ -5,8 +5,8 @@ metadata:
   namespace: {{ default "staging" .Release.Namespace }}
   labels:
     app: wis-{{ default "staging" .Release.Namespace }}
-  annotations: 
-    "builddate": "20221007-01"
+  annotations:
+    releaseTime: {{ dateInZone "2006-01-02 15:04:05Z" (now) "UTC"| quote }}
 spec:
   replicas: 1
   selector:
