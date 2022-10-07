@@ -38,7 +38,7 @@ metadata:
     external-dns.alpha.kubernetes.io/hostname: wis{{- if ne .Release.Namespace "production" }}-{{ default "staging" .Release.Namespace }}{{- end }}.{{ .Values.dns.name }}
     service.beta.kubernetes.io/azure-dns-label-name: calvincs-wis{{- if ne .Release.Namespace "production" }}-{{ default "staging" .Release.Namespace }}{{- end }}
 spec:
-  type: ClusterIp
+  type: ClusterIP
   ports:
   - port: 80
   selector:
