@@ -7,4 +7,4 @@ dns:
 rollingUpdate:
   enabled: true
   maxSurge: "100%"
-  maxUnavailable: "50%"
+  maxUnavailable: "100%"
