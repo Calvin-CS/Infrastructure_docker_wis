@@ -42,7 +42,7 @@ jobs:
         with:
           version: v3.9.0
       - name: Get AKS Credentials
-        uses: Azure/aks-set-context@v1
+        uses: Azure/aks-set-context@v3
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
           resource-group: CS_Infrastructure_AKS
