@@ -12,20 +12,20 @@ jobs:
     runs-on: ubuntu-20.04
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Set up Buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2
 
       - name: Docker Login
-        uses: docker/login-action@v1
+        uses: docker/login-action@v2
         with:
           registry: ${{ secrets.ACR_NAME }}
           username: ${{ secrets.ACR_LOGIN }}
           password: ${{ secrets.ACR_PASSWORD }}
 
       - name: Build and push production images
-        uses: docker/build-push-action@v2
+        uses: docker/build-push-action@v3
         with:
           context: .
           tags: ${{secrets.ACR_NAME}}/wis:latest
@@ -36,9 +36,9 @@ jobs:
     needs: build_push_image
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Install Helm
-        uses: Azure/setup-helm@v1
+        uses: Azure/setup-helm@v3
         with:
           version: v3.9.0
       - name: Get AKS Credentials
