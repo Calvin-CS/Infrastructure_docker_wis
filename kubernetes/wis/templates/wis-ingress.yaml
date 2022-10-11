@@ -11,10 +11,10 @@ metadata:
 spec:
   tls:
   - hosts:
-    - wis{{- if ne .Release.Namespace "production" }}-{{ default "staging" .Release.Namespace }}{{- end }}.{{ .Values.dns.name }}
+    - wis{{- if ne .Release.Namespace "production" }}-{{ default "staging" .Release.Namespace }}{{- end }}.{{- if ne .Release.Namespace "production" }}cs.{{- end }}calvin.edu
     secretName: tls-secret-wis-{{ default "staging" .Release.Namespace }}
   rules:
-  - host: wis{{- if ne .Release.Namespace "production" }}-{{ default "staging" .Release.Namespace }}{{- end }}.{{ .Values.dns.name }}
+  - host: wis{{- if ne .Release.Namespace "production" }}-{{ default "staging" .Release.Namespace }}{{- end }}.{{- if ne .Release.Namespace "production" }}cs.{{- end }}calvin.edu
     http:
       paths:
       - path: /(.*)

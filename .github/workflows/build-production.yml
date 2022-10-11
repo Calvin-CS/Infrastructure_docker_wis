@@ -1,9 +1,9 @@
-name: Build and push the tagged build to production
+name: Build and push the build to production
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches: [ main ]
+
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
@@ -13,10 +13,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-
-      - name: Fetch latest version
-        id: fetch_version
-        run: echo ::set-output name=TAG::${GITHUB_REF#refs/tags/}
 
       - name: Set up Buildx
         uses: docker/setup-buildx-action@v1
@@ -32,31 +28,26 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: .
-          tags: ${{secrets.ACR_NAME}}/wis:latest,${{secrets.ACR_NAME}}/wis:${{ steps.fetch_version.outputs.TAG }}
+          tags: ${{secrets.ACR_NAME}}/wis:latest
           push: true
-          
+
   deploy:
     runs-on: ubuntu-20.04
     needs: build_push_image
 
     steps:
       - uses: actions/checkout@v2
-
       - name: Install Helm
         uses: Azure/setup-helm@v1
         with:
           version: v3.9.0
-
       - name: Get AKS Credentials
         uses: Azure/aks-set-context@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
-          # Resource group name
           resource-group: CS_Infrastructure_AKS
-          # AKS cluster name
           cluster-name: Infrastructure
-
-      - name: Run Helm Deploy
+      - name: Run Helm Deploy Production
         run: |
           helm upgrade \
             --install \
@@ -66,5 +57,5 @@ jobs:
             --namespace production \
             wis \
             ./kubernetes/wis \
-            --set image.repository=${{ secrets.ACR_NAME }} \
-            --set image.tag=${GITHUB_REF##*/}
+            --set image.repository=${{ secrets.ACR_NAME }}
+
