@@ -41,12 +41,15 @@ jobs:
         uses: Azure/setup-helm@v3
         with:
           version: v3.9.0
-      - name: Get AKS Credentials
+      - name: Set AKS login information
+        uses: azure/login@v1
+          with:
+            creds: ${{ secrets.AZURE_CREDENTIALS }}
+      - name: Set AKS context
         uses: Azure/aks-set-context@v3
         with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-          resource-group: CS_Infrastructure_AKS
-          cluster-name: Infrastructure
+          resource-group: ${{ secrets.AZURE_RESOURCE_GROUP }}
+          cluster-name: ${{ secrets.AZURE_CLUSTER_NAME }}
       - name: Run Helm Deploy Production
         run: |
           helm upgrade \
