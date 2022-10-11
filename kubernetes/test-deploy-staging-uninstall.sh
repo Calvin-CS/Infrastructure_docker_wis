@@ -1,3 +1,3 @@
 #!/bin/bash
 
-helm uninstall wis --namespace production
+helm uninstall wis --namespace staging

@@ -1,0 +1,79 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: wic-{{ default "staging" .Release.Namespace }}-nginx-config
+  labels:
+    tier: backend
+data:
+  config: |
+    # custom wic deep redirect
+    server {
+      listen 80 default_server;
+      listen [::]:80 default_server;
+
+      # Set nginx to serve files from the shared volume!
+      root /var/www/html;
+      index index.html index.htm index.html.var;
+      server_name _;
+
+      location / {
+        return 301 https://wis.calvin.edu$request_uri;
+      }
+    }
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wic-{{ default "staging" .Release.Namespace }}
+  namespace: {{ default "staging" .Release.Namespace }}
+  labels:
+    app: wic-{{ default "staging" .Release.Namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wic-{{ default "staging" .Release.Namespace }}
+  template:
+    metadata:
+      labels:
+        app: wic-{{ default "staging" .Release.Namespace }}
+        {{ if ne .Release.Namespace "production" }}name: wic-{{ .Release.Namespace }}{{- else }}hostname: wic{{- end }}
+      annotations:
+        releaseTime: {{ dateInZone "2006-01-02 15:04:05Z" (now) "UTC"| quote }}
+    spec:
+      volumes:
+      - name: config
+        configMap:
+          name: wic-{{ default "staging" .Release.Namespace }}-nginx-config
+          items:
+          - key: config
+            path: default.conf
+      {{ if ne .Release.Namespace "production" }}hostname: wic-{{ .Release.Namespace }}{{- else }}hostname: wic{{- end }} 
+      dnsPolicy: Default
+      dnsConfig:
+        searches:
+          - cs.calvin.edu
+      containers:
+      - name: wic-{{ default "staging" .Release.Namespace }}
+        image: nginx:{{ default "stable" .Values.image.tag }}
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - mountPath: /etc/nginx/conf.d
+          name: config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: wic-{{ default "staging" .Release.Namespace }}
+  namespace: {{ default "staging" .Release.Namespace }}
+  annotations:
+    external-dns.alpha.kubernetes.io/hostname: wic{{- if ne .Release.Namespace "production" }}-{{ default "staging" .Release.Namespace }}{{- end }}.{{- if ne .Release.Namespace "production" }}cs.{{- end }}calvin.edu
+    service.beta.kubernetes.io/azure-dns-label-name: wic{{- if ne .Release.Namespace "production" }}-{{ default "staging" .Release.Namespace }}{{- end }}.{{- if ne .Release.Namespace "production" }}cs.{{- end }}calvin.edu
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+  selector:
+    app: wic-{{ default "staging" .Release.Namespace }}
